@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from bs4 import BeautifulSoup
 import requests
-
 import sys
 
 
@@ -55,6 +54,5 @@ class MainWindow(QMainWindow):  # главное окно
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     win = MainWindow()
-
     win.show()
     sys.exit(app.exec_())
