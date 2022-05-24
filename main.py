@@ -1,18 +1,20 @@
+from urllib.error import URLError
+import urllib3
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from bs4 import BeautifulSoup
 import requests
 import sys
-
+import urllib
 
 class MainWindow(QMainWindow):  # главное окно
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Parser")
         self.setWindowIcon(QIcon('icons/icon-planet.svg'))
-        self.high = 600
-        self.weight = 600
+        self.high = 800
+        self.weight = 800
         self.setup_ui()
 
     def setup_ui(self):
@@ -20,8 +22,9 @@ class MainWindow(QMainWindow):  # главное окно
         self.centralWidget()
         self.setFixedSize(self.high, self.weight)
         self.textbox = QLineEdit(self)
-        self.textbox.move(100, 100)
-        self.textbox.resize(400, 40)
+        self.textbox.move(20, 30)
+        self.textbox.resize(500, 40)
+        self.textbox.setText('Input text')
         self.textbox2 = QLineEdit(self)
         self.textbox2.move(100, 200)
         self.textbox2.resize(400, 40)
@@ -44,11 +47,16 @@ class MainWindow(QMainWindow):  # главное окно
         self.button.move(250, 300)
 
     def parse_click(self):
-        url = self.textbox.text()
-        html = requests.get(url).text
-        print(html)
-        with open('index.html', 'w', encoding='utf-8') as file:
-            file.write(html)
+        try:
+            url = self.textbox.text()
+            request_status = requests.head(url).status_code
+            print(request_status)
+            if 300 > request_status >= 200:
+                request_html = requests.get(url).text
+                with open('index.html', 'w', encoding='utf-8') as file:
+                    file.write(request_html)
+        except ValueError:
+            return 0
 
 
 if __name__ == "__main__":
