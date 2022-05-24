@@ -16,6 +16,7 @@ class MainWindow(QMainWindow):  # главное окно
         self.setup_ui()
 
     def setup_ui(self):
+        """initialize components"""
         self.resize(self.high, self.weight)
         self.centralWidget()
         self.setFixedSize(self.high, self.weight)
@@ -64,6 +65,7 @@ class MainWindow(QMainWindow):  # главное окно
         self.settings_button.move(430, 130)
 
     def parse_click(self):
+        """Check url exists and save html file"""
         try:
             url = self.textbox.text()
             request_status = requests.head(url).status_code
@@ -76,6 +78,7 @@ class MainWindow(QMainWindow):  # главное окно
             return 0
 
     def open_settings_dialog(self):
+        """Open window with settings(save path)"""
         pass
 
 
