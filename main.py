@@ -1,24 +1,75 @@
 # -*- coding: utf-8 -*-
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import *
 from bs4 import BeautifulSoup
 import requests
 import sys
+from dataclasses import dataclass
+
+
+@dataclass
+class SaveSettings:
+    folder_path: str
+    create_json: bool
+    save_filename: str
 
 
 class SettingsWindow(QWidget):
-    def __init__(self):
-        super(SettingsWindow, self).__init__()
-        self.setWindowTitle("Settings")
+    def __init__(self, parent, **kwargs):
+        super().__init__(parent=None, **kwargs)
+        self.mainWindow = parent
+        self.resize(500, 200)
+        self.setFixedSize(500, 200)
+        self.setWindowTitle("Save settings")
         self.setWindowIcon(QIcon('icons/settings.svg'))
-        self.resize(400, 200)
+        self.selectDirectoryWindow = QtWidgets.QFileDialog()
+        self.selectDirectoryWindow.setWindowTitle('Select directory')
+        self.selectDirectoryWindow.setWindowIcon(QIcon('icons/settings.svg'))
+
+        self.createJson = QCheckBox()
+        self.fieldDirectoryPath = QLineEdit(self)
+        self.filename = QLineEdit(self)
+        self.buttonDirectoryPath = QPushButton('...', self)
+        self.createJson = QCheckBox(self)
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.fieldDirectoryPath.setPlaceholderText('Path to folder: ')
+        self.fieldDirectoryPath.resize(370, 40)
+        self.fieldDirectoryPath.move(40, 40)
+
+        self.filename.setPlaceholderText('Filename: ')
+        self.filename.resize(370, 40)
+        self.filename.move(40, 100)
+
+        self.createJson.setText('Create JSON')
+        self.createJson.move(40, 150)
+
+        self.buttonDirectoryPath.resize(40, 40)
+        self.buttonDirectoryPath.move(420, 40)
+        self.buttonDirectoryPath.clicked.connect(self.click_select_directory)
+
+    def click_select_directory(self):
+        self.selectDirectoryWindow.show()
+        self.selectDirectoryWindow.setFileMode(self.selectDirectoryWindow.Directory)
+        self.selectDirectoryWindow.setOptions(self.selectDirectoryWindow.DontUseNativeDialog)
+        if self.selectDirectoryWindow.exec_() == QDialog.Accepted:
+            path = self.selectDirectoryWindow.selectedFiles()[0]
+            self.fieldDirectoryPath.setText(path)
 
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.child = SettingsWindow()
+        self.high = 700
+        self.weight = 200
+        self.resize(self.high, self.weight)
+        self.centralWidget()
+        self.setFixedSize(self.high, self.weight)
+        self.settingsWindow = SettingsWindow(self)
+
         self.error_message = QLabel(self)
         self.button = QPushButton('Parse', self)
         self.settings_button = QPushButton('Settings', self)
@@ -26,16 +77,11 @@ class MainWindow(QMainWindow):
         self.textbox2 = QLineEdit(self)
         self.setWindowTitle("Parser")
         self.setWindowIcon(QIcon('icons/icon-planet.svg'))
-        self.high = 700
-        self.weight = 200
+
         self.setup_ui()
 
     def setup_ui(self):
         """initialize components"""
-        self.resize(self.high, self.weight)
-        self.centralWidget()
-        self.setFixedSize(self.high, self.weight)
-
         self.error_message.setFont(QFont('Arial', 12))
         self.error_message.resize(120, 40)
         self.error_message.move(40, 0)
@@ -102,7 +148,7 @@ class MainWindow(QMainWindow):
 
     def open_settings_dialog(self):
         """Open window with settings(save path)"""
-        self.child.show()
+        self.settingsWindow.show()
 
     def url_text_box_changed(self):
         # self.textbox.palette().setColor(QPalette.Highlight, QColor('white'))
