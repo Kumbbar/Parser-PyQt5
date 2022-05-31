@@ -7,14 +7,8 @@ from PyQt5.QtCore import *
 from bs4 import BeautifulSoup
 import requests
 import sys
-from dataclasses import dataclass
-
-
-@dataclass
-class UserSettings:
-    absolute_path: str
-    filename: str
-    create_json: bool
+from settings import UserSettings
+from saver import ParsingSaver
 
 
 user_settings = UserSettings(
@@ -22,6 +16,11 @@ user_settings = UserSettings(
     create_json=False,
     filename='file'
 )
+
+headers = {
+    'accept': '*/*',
+    'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.143 Mobile Safari/537.36'
+}
 
 
 class SettingsWindow(QWidget):
@@ -147,7 +146,7 @@ class MainWindow(QMainWindow):
 
         self.textbox2.move(40, 90)
         self.textbox2.resize(500, 40)
-        self.textbox2.setPlaceholderText('Input tag:')
+        self.textbox2.setPlaceholderText('Input class or tag without <> (Json only):')
 
         self.button.resize(100, 200)
         self.button.clicked.connect(self.parse_click)
@@ -184,19 +183,17 @@ class MainWindow(QMainWindow):
         self.settings_button.move(440, 140)
 
     def parse_click(self) -> None:
-        """Check url exists and save html file"""
+        """Check url exists and save html and optional json file with tags"""
+        url = self.textbox.text()
+        saver = ParsingSaver(user_settings=user_settings, url=url)
         try:
-            url = self.textbox.text()
-            request_status = requests.head(url).status_code
-            print(request_status)
-            if 300 > request_status >= 200:
-                request_html = requests.get(url).text
-                with open('index.html', 'w', encoding='utf-8') as file:
-                    file.write(request_html)
+            saver.get_status_code(headers=headers)
+            if 200 <= saver.status_code < 300:
+                saver.get_html()
+                saver.save_html()
             else:
                 self.url_not_found()
-        except OSError:
-            # fix nvidia error
+        except requests.exceptions.ConnectionError:
             self.invalid_input()
 
     def open_settings_dialog(self) -> None:
@@ -219,7 +216,6 @@ class MainWindow(QMainWindow):
                                    )
 
     def url_text_box_changed(self) -> None:
-        # self.textbox.palette().setColor(QPalette.Highlight, QColor('white'))
         self.set_textbox_white_color()
         self.error_message.setVisible(False)
 
