@@ -122,7 +122,8 @@ class MainWindow(QMainWindow):
         self.centralWidget()
         self.setFixedSize(self.high, self.weight)
 
-        self.error_message = QLabel(self)
+        self.message = QLabel(self)
+        self.manual = QLabel(self)
         self.button = QPushButton('Parse', self)
         self.settings_button = QPushButton('Settings', self)
         self.textbox = QLineEdit(self)
@@ -134,11 +135,15 @@ class MainWindow(QMainWindow):
 
     def setup_ui(self) -> None:
         """initialize components"""
-        self.error_message.setFont(QFont('Arial', 12))
-        self.error_message.resize(120, 40)
-        self.error_message.move(40, 0)
-        self.error_message.setVisible(False)
+        self.message.setFont(QFont('Arial', 12))
+        self.message.resize(200, 40)
+        self.message.move(40, 0)
+        self.message.setVisible(False)
 
+        self.manual.setFont(QFont('Arial', 8))
+        self.manual.resize(230, 40)
+        self.manual.move(40, 140)
+        self.manual.setText('Search by tag name - h2\nSearch by tag and classname - div Info')
         self.textbox.move(40, 40)
         self.textbox.resize(500, 40)
         self.textbox.textChanged.connect(self.url_text_box_changed)
@@ -191,17 +196,44 @@ class MainWindow(QMainWindow):
             if 200 <= saver.status_code < 300:
                 saver.get_html()
                 saver.save_html()
+                if user_settings.create_json:
+                    saver.save_json(self.textbox2.text())
+                self.successful_request()
             else:
-                self.url_not_found()
-        except requests.exceptions.ConnectionError:
+                self.url_not_found(saver.status_code)
+        except (requests.exceptions.ConnectionError, requests.exceptions.MissingSchema):
             self.invalid_input()
 
     def open_settings_dialog(self) -> None:
         """Open window with settings(save path)"""
+        # New instance create for update settings field
         self.settingsWindow = SettingsWindow(self)
         self.settingsWindow.show()
 
+    def url_text_box_changed(self) -> None:
+        """Change textbox background color and hide error message"""
+        self.set_textbox_white_color()
+        self.message.setVisible(False)
+
+    def successful_request(self):
+        """Show success message"""
+        self.message.setText('Successful')
+        self.message.setVisible(True)
+
+    def invalid_input(self) -> None:
+        """Shows invalid input message"""
+        self.set_textbox_red_color()
+        self.message.setText('Invalid input')
+        self.message.setVisible(True)
+
+    def url_not_found(self, status_code: int) -> None:
+        """Shows url not found message"""
+        self.set_textbox_red_color()
+        self.message.setText(f'Url error - {status_code}')
+        self.message.setVisible(True)
+
     def set_textbox_white_color(self) -> None:
+        """Change background color for textbox to white (used when text changed)"""
         self.textbox.setStyleSheet("QLineEdit"
                                    "{"
                                    "background-color : white;"
@@ -209,25 +241,12 @@ class MainWindow(QMainWindow):
                                    )
 
     def set_textbox_red_color(self) -> None:
+        """Change background color for textbox to red (used when error)"""
         self.textbox.setStyleSheet("QLineEdit"
                                    "{"
                                    "background-color : #ff6161;"
                                    "}"
                                    )
-
-    def url_text_box_changed(self) -> None:
-        self.set_textbox_white_color()
-        self.error_message.setVisible(False)
-
-    def invalid_input(self) -> None:
-        self.set_textbox_red_color()
-        self.error_message.setText('Invalid input')
-        self.error_message.setVisible(True)
-
-    def url_not_found(self) -> None:
-        self.set_textbox_red_color()
-        self.error_message.setText('Url not found')
-        self.error_message.setVisible(True)
 
 
 if __name__ == "__main__":

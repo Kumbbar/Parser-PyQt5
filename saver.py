@@ -12,35 +12,45 @@ class ParsingSaver:
         self.html = ''
 
     def get_status_code(self, headers: dict) -> int:
+        """Get status code, must be called for check connection and update status code by default"""
         self.status_code = requests.head(self.url, headers=headers).status_code
         return self.status_code
 
     def get_html(self) -> str:
+        """Get html page to var and self"""
         self.html = requests.get(self.url).text
         return self.html
 
     def save_html(self) -> None:
-        with open(f'{self.user_settings.absolute_path}\\{self.user_settings.filename}.html', 'w', encoding='utf-8') as file:
+        """Save page to html file"""
+        with open(f'{self.user_settings.absolute_path}\\{self.user_settings.filename}.html', 'w', encoding='utf-8') \
+                as file:
             file.write(self.html)
 
     def save_json(self, tag_or_class: str) -> None:
+        """Get string with tag and optional classname and save data to json"""
         beautiful_soup = BeautifulSoup(self.html, 'html.parser')
         json_data = []
         if ' ' in tag_or_class:
+            # Search tag and classname (space is replaced by * because classname can contain spaces)
             first_space_index = tag_or_class.find(' ')
             tag_or_class = f'{tag_or_class[:first_space_index]}*{tag_or_class[first_space_index + 1:]}'.split('*')
             find_all = beautiful_soup.find_all(tag_or_class[0], {'class': tag_or_class[1]})
+            for item in find_all:
+                json_data.append(
+                    {
+                        tag_or_class[0]: item.text
+                    }
+                )
         else:
+            # Search only tag with data
             find_all = beautiful_soup.find_all(tag_or_class)
-
-        for item in find_all:
-            json_data.append(
-                {
-                    item.title,
-                    item.text
-                }
-            )
-        with open(f'{self.user_settings.absolute_path}\\{self.user_settings.filename}.json', 'w', encoding='utf-8') as file:
+            for item in find_all:
+                json_data.append(
+                    {
+                        tag_or_class: item.text
+                    }
+                )
+        with open(f'{self.user_settings.absolute_path}\\{self.user_settings.filename}.json', 'w', encoding='utf-8') \
+                as file:
             json.dump(json_data, file, indent=4, ensure_ascii=False)
-
-
