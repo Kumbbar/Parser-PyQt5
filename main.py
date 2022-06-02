@@ -192,7 +192,7 @@ class MainWindow(QMainWindow):
         try:
             saver.get_status_code(headers=headers)
             if 200 <= saver.status_code < 300:
-                saver.get_html()
+                saver.get_html(headers=headers)
                 saver.save_html()
                 if user_settings.create_json:
                     saver.save_json(self.textbox2.text())

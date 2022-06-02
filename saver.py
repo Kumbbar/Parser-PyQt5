@@ -16,9 +16,9 @@ class ParsingSaver:
         self.status_code = requests.head(self.url, headers=headers).status_code
         return self.status_code
 
-    def get_html(self) -> str:
+    def get_html(self, headers: dict) -> str:
         """Get html page to var and self"""
-        self.html = requests.get(self.url).text
+        self.html = requests.get(self.url, headers=headers).text
         return self.html
 
     def save_html(self) -> None:
