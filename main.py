@@ -3,8 +3,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import os
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import *
-from bs4 import BeautifulSoup
 import requests
 import sys
 from settings import UserSettings
