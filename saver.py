@@ -32,7 +32,7 @@ class ParsingSaver:
         beautiful_soup = BeautifulSoup(self.html, 'html.parser')
         json_data = []
         if ' ' in tag_or_class:
-            # Search tag and classname (space is replaced by * because classname can contain spaces)
+            # Search by tag and classname (space is replaced by * because classname can contain spaces)
             first_space_index = tag_or_class.find(' ')
             tag_or_class = f'{tag_or_class[:first_space_index]}*{tag_or_class[first_space_index + 1:]}'.split('*')
             find_all = beautiful_soup.find_all(tag_or_class[0], {'class': tag_or_class[1]})
@@ -43,7 +43,7 @@ class ParsingSaver:
                     }
                 )
         else:
-            # Search only tag with data
+            # Search by tag with data
             find_all = beautiful_soup.find_all(tag_or_class)
             for item in find_all:
                 json_data.append(
